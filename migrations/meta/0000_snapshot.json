@@ -1,0 +1,548 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "35c8f89b-e421-4cdd-a876-fab98f71b2e7",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "tables": {
+    "astronomical_data": {
+      "name": "astronomical_data",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "date": {
+          "name": "date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sun_right_ascension": {
+          "name": "sun_right_ascension",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sun_declination": {
+          "name": "sun_declination",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sun_constellation": {
+          "name": "sun_constellation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "moon_phase": {
+          "name": "moon_phase",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "api_source": {
+          "name": "api_source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(datetime('now'))"
+        }
+      },
+      "indexes": {
+        "astronomical_data_date_unique": {
+          "name": "astronomical_data_date_unique",
+          "columns": [
+            "date"
+          ],
+          "isUnique": true
+        },
+        "idx_astronomical_data_date": {
+          "name": "idx_astronomical_data_date",
+          "columns": [
+            "date"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "horoscope_categories": {
+      "name": "horoscope_categories",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "display_name_pt": {
+          "name": "display_name_pt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "icon": {
+          "name": "icon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "horoscope_categories_name_unique": {
+          "name": "horoscope_categories_name_unique",
+          "columns": [
+            "name"
+          ],
+          "isUnique": true
+        },
+        "idx_horoscope_categories_name": {
+          "name": "idx_horoscope_categories_name",
+          "columns": [
+            "name"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "horoscope_content": {
+      "name": "horoscope_content",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "sign_id": {
+          "name": "sign_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "type_id": {
+          "name": "type_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "effective_date": {
+          "name": "effective_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "preview_text": {
+          "name": "preview_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "full_text": {
+          "name": "full_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(datetime('now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(datetime('now'))"
+        }
+      },
+      "indexes": {
+        "idx_horoscope_content_sign_id": {
+          "name": "idx_horoscope_content_sign_id",
+          "columns": [
+            "sign_id"
+          ],
+          "isUnique": false
+        },
+        "idx_horoscope_content_type_id": {
+          "name": "idx_horoscope_content_type_id",
+          "columns": [
+            "type_id"
+          ],
+          "isUnique": false
+        },
+        "idx_horoscope_content_effective_date": {
+          "name": "idx_horoscope_content_effective_date",
+          "columns": [
+            "effective_date"
+          ],
+          "isUnique": false
+        },
+        "idx_horoscope_content_is_active": {
+          "name": "idx_horoscope_content_is_active",
+          "columns": [
+            "is_active"
+          ],
+          "isUnique": false
+        },
+        "idx_horoscope_content_composite": {
+          "name": "idx_horoscope_content_composite",
+          "columns": [
+            "sign_id",
+            "type_id",
+            "effective_date"
+          ],
+          "isUnique": false
+        },
+        "unique_sign_type_date": {
+          "name": "unique_sign_type_date",
+          "columns": [
+            "sign_id",
+            "type_id",
+            "effective_date"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "horoscope_content_sign_id_signs_id_fk": {
+          "name": "horoscope_content_sign_id_signs_id_fk",
+          "tableFrom": "horoscope_content",
+          "tableTo": "signs",
+          "columnsFrom": [
+            "sign_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "horoscope_content_type_id_horoscope_types_id_fk": {
+          "name": "horoscope_content_type_id_horoscope_types_id_fk",
+          "tableFrom": "horoscope_content",
+          "tableTo": "horoscope_types",
+          "columnsFrom": [
+            "type_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "horoscope_content_categories": {
+      "name": "horoscope_content_categories",
+      "columns": {
+        "horoscope_content_id": {
+          "name": "horoscope_content_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "category_id": {
+          "name": "category_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content_text": {
+          "name": "content_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_hcc_content_id": {
+          "name": "idx_hcc_content_id",
+          "columns": [
+            "horoscope_content_id"
+          ],
+          "isUnique": false
+        },
+        "idx_hcc_category_id": {
+          "name": "idx_hcc_category_id",
+          "columns": [
+            "category_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "horoscope_content_categories_horoscope_content_id_horoscope_content_id_fk": {
+          "name": "horoscope_content_categories_horoscope_content_id_horoscope_content_id_fk",
+          "tableFrom": "horoscope_content_categories",
+          "tableTo": "horoscope_content",
+          "columnsFrom": [
+            "horoscope_content_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "horoscope_content_categories_category_id_horoscope_categories_id_fk": {
+          "name": "horoscope_content_categories_category_id_horoscope_categories_id_fk",
+          "tableFrom": "horoscope_content_categories",
+          "tableTo": "horoscope_categories",
+          "columnsFrom": [
+            "category_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "horoscope_content_categories_horoscope_content_id_category_id_pk": {
+          "columns": [
+            "horoscope_content_id",
+            "category_id"
+          ],
+          "name": "horoscope_content_categories_horoscope_content_id_category_id_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "horoscope_types": {
+      "name": "horoscope_types",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "display_name_pt": {
+          "name": "display_name_pt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cache_duration_hours": {
+          "name": "cache_duration_hours",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "horoscope_types_type_unique": {
+          "name": "horoscope_types_type_unique",
+          "columns": [
+            "type"
+          ],
+          "isUnique": true
+        },
+        "idx_horoscope_types_type": {
+          "name": "idx_horoscope_types_type",
+          "columns": [
+            "type"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "signs": {
+      "name": "signs",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name_en": {
+          "name": "name_en",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name_pt": {
+          "name": "name_pt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "emoji": {
+          "name": "emoji",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "start_date": {
+          "name": "start_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "end_date": {
+          "name": "end_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "element": {
+          "name": "element",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "modality": {
+          "name": "modality",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ruling_planet": {
+          "name": "ruling_planet",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(datetime('now'))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(datetime('now'))"
+        }
+      },
+      "indexes": {
+        "signs_name_en_unique": {
+          "name": "signs_name_en_unique",
+          "columns": [
+            "name_en"
+          ],
+          "isUnique": true
+        },
+        "idx_signs_name_en": {
+          "name": "idx_signs_name_en",
+          "columns": [
+            "name_en"
+          ],
+          "isUnique": true
+        },
+        "idx_signs_name_pt": {
+          "name": "idx_signs_name_pt",
+          "columns": [
+            "name_pt"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

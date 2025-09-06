@@ -1,0 +1,100 @@
+service: sandalo
+image: my-linearts/horoscopo/app
+asset_path: /app/.output/public
+
+servers:
+  web:
+    hosts:
+      - my-line-arts-ssh
+    options:
+      add-host: host.docker.internal:host-gateway
+
+registry:
+  server: us-central1-docker.pkg.dev
+  username: _json_key_base64
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+ssh:
+  user: leonardo
+
+proxy:
+  ssl: true
+  host: meuhoroscopo.com
+  app_port: 3000
+  healthcheck:
+    path: /
+    interval: 3
+    timeout: 2
+  forward_headers: false
+
+# Configure builder setup.
+builder:
+  arch: amd64
+
+# Inject ENV variables into containers (secrets come from .kamal/secrets).
+#
+env:
+  clear:
+    NODE_ENV: production
+    # VITE_PUBLIC_POSTHOG_KEY: phc_gsfZOVgVc6K2Ib5l0wEDt0IKVR0W8dUdNqq0egpaUo4
+    # VITE_PUBLIC_POSTHOG_HOST: https://us.i.posthog.com
+    DATABASE_URL: file:/mnt/horoscopo/horoscopo.sqlite
+    ASTRO_API_ID: 44e72d4c-a7e5-4606-9568-cafb6c2835d9
+  secret:
+    - OPENAI_API_KEY
+    - ASTRO_API_SECRET
+
+volumes:
+  - /mnt/horoscopo:/mnt/horoscopo
+# Aliases are triggered with "bin/kamal <alias>". You can overwrite arguments on invocation:
+# "bin/kamal app logs -r job" will tail logs from the first server in the job section.
+#
+# aliases:
+#   shell: app exec --interactive --reuse "bash"
+
+# Use a different ssh user than root
+#
+# ssh:
+#   user: app
+
+# Use a persistent storage volume.
+#
+# volumes:
+#   - "app_storage:/app/storage"
+
+# Bridge fingerprinted assets, like JS and CSS, between versions to avoid
+# hitting 404 on in-flight requests. Combines all files from new and old
+# version inside the asset_path.
+#
+# asset_path: /app/public/assets
+
+# Configure rolling deploys by setting a wait time between batches of restarts.
+#
+# boot:
+#   limit: 10 # Can also specify as a percentage of total hosts, such as "25%"
+#   wait: 2
+
+# Use accessory services (secrets come from .kamal/secrets).
+#
+# accessories:
+#   db:
+#     image: mysql:8.0
+#     host: 192.168.0.2
+#     port: 3306
+#     env:
+#       clear:
+#         MYSQL_ROOT_HOST: '%'
+#       secret:
+#         - MYSQL_ROOT_PASSWORD
+#     files:
+#       - config/mysql/production.cnf:/etc/mysql/my.cnf
+#       - db/production.sql:/docker-entrypoint-initdb.d/setup.sql
+#     directories:
+#       - data:/var/lib/mysql
+#   redis:
+#     image: valkey/valkey:8
+#     host: 192.168.0.2
+#     port: 6379
+#     directories:
+#       - data:/data

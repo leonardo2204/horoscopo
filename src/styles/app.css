@@ -1,0 +1,63 @@
+@import 'tailwindcss';
+
+@layer base {
+  :root {
+    /* Horoscope Theme Colors */
+    --bg-principal: #FFF8F0; /* Fundo principal - creme suave */
+    --acento-mistico: #6C4AB6; /* Acentos místicos - roxo profundo */
+    --toque-solar: #F9A826; /* Toques solares - amarelo dourado */
+    --texto-padrao: #333333; /* Texto padrão */
+    --bg-secao-1: #F4EDE8; /* Fundo de seções - alternância 1 */
+    --bg-secao-2: #FCEFEF; /* Fundo de seções - alternância 2 */
+  }
+
+  html {
+    color-scheme: light dark;
+  }
+
+  * {
+    @apply border-gray-200 dark:border-gray-800;
+  }
+
+  html,
+  body {
+    @apply text-gray-900 bg-gray-50 dark:bg-gray-950 dark:text-gray-200;
+  }
+
+  /* Horoscope Theme Classes */
+  .bg-principal {
+    background-color: var(--bg-principal);
+  }
+
+  .text-acento-mistico {
+    color: var(--acento-mistico);
+  }
+
+  .bg-acento-mistico {
+    background-color: var(--acento-mistico);
+  }
+
+  .text-toque-solar {
+    color: var(--toque-solar);
+  }
+
+  .bg-toque-solar {
+    background-color: var(--toque-solar);
+  }
+
+  .text-padrao {
+    color: var(--texto-padrao);
+  }
+
+  .bg-secao-1 {
+    background-color: var(--bg-secao-1);
+  }
+
+  .bg-secao-2 {
+    background-color: var(--bg-secao-2);
+  }
+
+  .using-mouse * {
+    outline: none !important;
+  }
+}
