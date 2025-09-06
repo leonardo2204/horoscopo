@@ -92,10 +92,7 @@ const Pending = () => <div>Loading...</div>;
 
 export const Route = createFileRoute("/horoscopo-do-dia/$signo")({
   component: RouteComponent,
-  loader: async ({ params: { signo } }) => {
-    const horoscopeData = await generateFn({ data: { signo } });
-    return { horoscopeData };
-  },
+  loader: ({ params: { signo } }) => generateFn({ data: { signo } }),
   head: ({ loaderData, params: { signo } }) => {
     if (!loaderData) {
       return {
@@ -111,8 +108,8 @@ export const Route = createFileRoute("/horoscopo-do-dia/$signo")({
     return {
       meta: [
         ...seo({
-          title: `Horóscopo de hoje, ${formatDateToPortuguese(loaderData.horoscopeData.today)}, para o signo de ${loaderData.horoscopeData.sign}`,
-          description: `Veja as previsões de ${signo} para hoje, ${formatDateToPortuguese(loaderData.horoscopeData.today)}: amor, dinheiro, trabalho e bem-estar. Dicas práticas + números e cor da sorte. Leia agora!`,
+          title: `Horóscopo de hoje, ${formatDateToPortuguese(loaderData.today)}, para o signo de ${loaderData.sign}`,
+          description: `Veja as previsões de ${signo} para hoje, ${formatDateToPortuguese(loaderData.today)}: amor, dinheiro, trabalho e bem-estar. Dicas práticas + números e cor da sorte. Leia agora!`,
         }),
       ],
     };
@@ -139,7 +136,7 @@ const signosNavigation = [
 
 function RouteComponent() {
   const { signo } = useParams({ from: "/horoscopo-do-dia/$signo" });
-  const { horoscopeData } = Route.useLoaderData();
+  const horoscopeData = Route.useLoaderData();
 
   // Handle loading and error states
   if (!horoscopeData) {
