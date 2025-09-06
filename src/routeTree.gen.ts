@@ -21,9 +21,7 @@ const HoroscopoDoDiaSignoRoute = HoroscopoDoDiaSignoRouteImport.update({
   id: '/horoscopo-do-dia/$signo',
   path: '/horoscopo-do-dia/$signo',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/horoscopo-do-dia/$signo.lazy').then((d) => d.Route),
-)
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
