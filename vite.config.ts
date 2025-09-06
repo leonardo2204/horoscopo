@@ -15,7 +15,15 @@ export default defineConfig({
     tsConfigPaths({
       projects: ["./tsconfig.json"],
     }),
-    tanstackStart({ customViteReactPlugin: true }),
+    tanstackStart({
+      customViteReactPlugin: true,
+      target: "node-server",
+      prerender: {
+        enabled: true,
+        crawlLinks: true,
+        concurrency: 14,
+      },
+    }),
     tailwindcss(),
     viteReact(),
   ],
