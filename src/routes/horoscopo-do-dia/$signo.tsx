@@ -3,7 +3,7 @@ import { formatDateToPortuguese, seo } from "~/utils/seo";
 import { createServerFn } from "@tanstack/react-start";
 import { generateHoroscope } from "../../utils/horoscope";
 import z from "zod";
-import { setHeader } from "@tanstack/react-start/server";
+import { setResponseHeader } from "@tanstack/react-start/server";
 import { getDB } from "../../db";
 import { and, eq } from "drizzle-orm";
 import { horoscopeContent, signs } from "../../db/schema/schema";
@@ -30,7 +30,7 @@ const schema = z.object({
 const generateFn = createServerFn({ method: "GET" })
   .validator(schema)
   .handler(async ({ data: { signo } }) => {
-    setHeader("Cache-Control", "public, max-age=3600, s-maxage=7200");
+    setResponseHeader("Cache-Control", "public, max-age=3600, s-maxage=86400");
 
     const properSignName = signMap[signo.toLowerCase()];
     if (!properSignName) {
