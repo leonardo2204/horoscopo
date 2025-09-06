@@ -1,4 +1,4 @@
-service: sandalo
+service: horoscopo
 image: my-linearts/horoscopo/app
 asset_path: /app/.output/public
 
