@@ -31,14 +31,17 @@ proxy:
 # Configure builder setup.
 builder:
   arch: amd64
+  args:
+    VITE_PUBLIC_POSTHOG_KEY: phc_ca5KWcSY1KrnSbh16OWSurec7FH1pBupe0BLKTgS8vD
+    VITE_PUBLIC_POSTHOG_HOST: https://us.i.posthog.com
 
 # Inject ENV variables into containers (secrets come from .kamal/secrets).
 #
 env:
   clear:
     NODE_ENV: production
-    # VITE_PUBLIC_POSTHOG_KEY: phc_gsfZOVgVc6K2Ib5l0wEDt0IKVR0W8dUdNqq0egpaUo4
-    # VITE_PUBLIC_POSTHOG_HOST: https://us.i.posthog.com
+    VITE_PUBLIC_POSTHOG_KEY: phc_ca5KWcSY1KrnSbh16OWSurec7FH1pBupe0BLKTgS8vD
+    VITE_PUBLIC_POSTHOG_HOST: https://us.i.posthog.com
     DATABASE_URL: file:/mnt/horoscopo/horoscopo.sqlite
     ASTRO_API_ID: 44e72d4c-a7e5-4606-9568-cafb6c2835d9
   secret:
