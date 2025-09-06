@@ -1,10 +1,80 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
+import { getDB } from "../db";
+import { setResponseHeader } from "@tanstack/react-start/server";
+import { eq } from "drizzle-orm";
+import { signs, horoscopeContent } from "../db/schema/schema";
+
+function normalizeSignName(signName: string): string {
+  return signName
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z]/g, "");
+}
+
+const getSignos = createServerFn({ method: "GET" }).handler(async () => {
+  setResponseHeader("Cache-Control", "public, max-age=3600, s-maxage=86400");
+  const saoPauloDate = new Date().toLocaleString("en-CA", {
+    timeZone: "America/Sao_Paulo",
+  });
+
+  const today = saoPauloDate.split(",")[0].trim();
+
+  const signos = await getDB().query.signs.findMany({
+    columns: {
+      id: true,
+      emoji: true,
+      startDate: true,
+      endDate: true,
+      namePt: true,
+    },
+    with: {
+      horoscopeContent: {
+        columns: {
+          previewText: true,
+        },
+        where: eq(horoscopeContent.effectiveDate, today),
+        limit: 1,
+      },
+    },
+    orderBy: (signs, { asc }) => [asc(signs.id)],
+  });
+
+  const signosWithPreview = signos.map((signo) => {
+    const content = signo.horoscopeContent[0];
+    const previewText = content?.previewText || "Clique para ver o horóscopo";
+    const normalizedName = normalizeSignName(signo.namePt);
+    
+    // Format dates as dd/MM
+    const formatDate = (dateStr: string) => {
+      const [month, day] = dateStr.split('-');
+      return `${day}/${month}`;
+    };
+    
+    const dateRange = `${formatDate(signo.startDate)} a ${formatDate(signo.endDate)}`;
+
+    return {
+      id: signo.id,
+      emoji: signo.emoji,
+      namePt: signo.namePt,
+      normalizedName,
+      previewText,
+      dateRange,
+    };
+  });
+
+  return { signos: signosWithPreview };
+});
 
 export const Route = createFileRoute("/")({
   component: Home,
+  loader: () => getSignos(),
 });
 
 function Home() {
+  const { signos } = Route.useLoaderData();
+
   return (
     <main className="min-h-screen bg-principal overflow-hidden">
       {/* Hero Section */}
@@ -117,187 +187,29 @@ function Home() {
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-            {/* Áries */}
-            <Link
-              to="/horoscopo-do-dia/$signo"
-              params={{ signo: "aries" }}
-              className="bg-white rounded-xl p-4 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group hover:scale-105 block"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="text-2xl">♈</div>
-                <h3 className="font-semibold text-acento-mistico">Áries</h3>
-              </div>
-              <p className="text-padrao/80 text-sm leading-relaxed">
-                Hoje é dia de tomar a frente e não esperar por ninguém...
-              </p>
-            </Link>
-
-            {/* Touro */}
-            <Link
-              to="/horoscopo-do-dia/$signo"
-              params={{ signo: "touro" }}
-              className="bg-white rounded-xl p-4 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group hover:scale-105 block"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="text-2xl">♉</div>
-                <h3 className="font-semibold text-acento-mistico">Touro</h3>
-              </div>
-              <p className="text-padrao/80 text-sm leading-relaxed">
-                Sua paciência será recompensada hoje. Vá com calma...
-              </p>
-            </Link>
-
-            {/* Gêmeos */}
-            <Link
-              to="/horoscopo-do-dia/$signo"
-              params={{ signo: "gemeos" }}
-              className="bg-white rounded-xl p-4 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group hover:scale-105 block"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="text-2xl">♊</div>
-                <h3 className="font-semibold text-acento-mistico">Gêmeos</h3>
-              </div>
-              <p className="text-padrao/80 text-sm leading-relaxed">
-                Conversas importantes podem mudar seu dia. Escute mais...
-              </p>
-            </Link>
-
-            {/* Câncer */}
-            <Link
-              to="/horoscopo-do-dia/$signo"
-              params={{ signo: "cancer" }}
-              className="bg-white rounded-xl p-4 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group hover:scale-105 block"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="text-2xl">♋</div>
-                <h3 className="font-semibold text-acento-mistico">Câncer</h3>
-              </div>
-              <p className="text-padrao/80 text-sm leading-relaxed">
-                Confie na sua intuição hoje. Ela não vai te enganar...
-              </p>
-            </Link>
-
-            {/* Leão */}
-            <Link
-              to="/horoscopo-do-dia/$signo"
-              params={{ signo: "leao" }}
-              className="bg-white rounded-xl p-4 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group hover:scale-105 block"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="text-2xl">♌</div>
-                <h3 className="font-semibold text-acento-mistico">Leão</h3>
-              </div>
-              <p className="text-padrao/80 text-sm leading-relaxed">
-                Hoje é dia de brilhar sem pedir licença...
-              </p>
-            </Link>
-
-            {/* Virgem */}
-            <Link
-              to="/horoscopo-do-dia/$signo"
-              params={{ signo: "virgem" }}
-              className="bg-white rounded-xl p-4 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group hover:scale-105 block"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="text-2xl">♍</div>
-                <h3 className="font-semibold text-acento-mistico">Virgem</h3>
-              </div>
-              <p className="text-padrao/80 text-sm leading-relaxed">
-                Organize suas prioridades e veja a mágica acontecer...
-              </p>
-            </Link>
-
-            {/* Libra */}
-            <Link
-              to="/horoscopo-do-dia/$signo"
-              params={{ signo: "libra" }}
-              className="bg-white rounded-xl p-4 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group hover:scale-105 block"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="text-2xl">♎</div>
-                <h3 className="font-semibold text-acento-mistico">Libra</h3>
-              </div>
-              <p className="text-padrao/80 text-sm leading-relaxed">
-                Busque o equilíbrio em tudo que fizer hoje...
-              </p>
-            </Link>
-
-            {/* Escorpião */}
-            <Link
-              to="/horoscopo-do-dia/$signo"
-              params={{ signo: "escorpiao" }}
-              className="bg-white rounded-xl p-4 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group hover:scale-105 block"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="text-2xl">♏</div>
-                <h3 className="font-semibold text-acento-mistico">Escorpião</h3>
-              </div>
-              <p className="text-padrao/80 text-sm leading-relaxed">
-                Intensidade é sua palavra-chave hoje. Use com sabedoria...
-              </p>
-            </Link>
-
-            {/* Sagitário */}
-            <Link
-              to="/horoscopo-do-dia/$signo"
-              params={{ signo: "sagitario" }}
-              className="bg-white rounded-xl p-4 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group hover:scale-105 block"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="text-2xl">♐</div>
-                <h3 className="font-semibold text-acento-mistico">Sagitário</h3>
-              </div>
-              <p className="text-padrao/80 text-sm leading-relaxed">
-                Aventure-se em território desconhecido hoje...
-              </p>
-            </Link>
-
-            {/* Capricórnio */}
-            <Link
-              to="/horoscopo-do-dia/$signo"
-              params={{ signo: "capricornio" }}
-              className="bg-white rounded-xl p-4 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group hover:scale-105 block"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="text-2xl">♑</div>
-                <h3 className="font-semibold text-acento-mistico">
-                  Capricórnio
-                </h3>
-              </div>
-              <p className="text-padrao/80 text-sm leading-relaxed">
-                Disciplina e foco vão te levar longe hoje...
-              </p>
-            </Link>
-
-            {/* Aquário */}
-            <Link
-              to="/horoscopo-do-dia/$signo"
-              params={{ signo: "aquario" }}
-              className="bg-white rounded-xl p-4 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group hover:scale-105 block"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="text-2xl">♒</div>
-                <h3 className="font-semibold text-acento-mistico">Aquário</h3>
-              </div>
-              <p className="text-padrao/80 text-sm leading-relaxed">
-                Inovação é o seu caminho hoje. Pense fora da caixa...
-              </p>
-            </Link>
-
-            {/* Peixes */}
-            <Link
-              to="/horoscopo-do-dia/$signo"
-              params={{ signo: "peixes" }}
-              className="bg-white rounded-xl p-4 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group hover:scale-105 block"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="text-2xl">♓</div>
-                <h3 className="font-semibold text-acento-mistico">Peixes</h3>
-              </div>
-              <p className="text-padrao/80 text-sm leading-relaxed">
-                Deixe sua sensibilidade guiar suas decisões hoje...
-              </p>
-            </Link>
+            {signos.map((signo) => (
+              <Link
+                key={signo.id}
+                to="/horoscopo-do-dia/$signo"
+                params={{ signo: signo.normalizedName }}
+                className="bg-white rounded-xl p-4 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group hover:scale-105 block"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="text-2xl">{signo.emoji}</div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-acento-mistico">
+                      {signo.namePt}
+                    </h3>
+                    <p className="text-xs text-padrao/60">
+                      {signo.dateRange}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-padrao/80 text-sm leading-relaxed">
+                  {signo.previewText}...
+                </p>
+              </Link>
+            ))}
           </div>
         </div>
       </section>

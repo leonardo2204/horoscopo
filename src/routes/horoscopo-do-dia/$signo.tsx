@@ -8,20 +8,31 @@ import { getDB } from "../../db";
 import { and, eq } from "drizzle-orm";
 import { horoscopeContent, signs } from "../../db/schema/schema";
 
-const signMap: Record<string, string> = {
-  aries: "Áries",
-  touro: "Touro",
-  gemeos: "Gêmeos",
-  cancer: "Câncer",
-  leao: "Leão",
-  virgem: "Virgem",
-  libra: "Libra",
-  escorpiao: "Escorpião",
-  sagitario: "Sagitário",
-  capricornio: "Capricórnio",
-  aquario: "Aquário",
-  peixes: "Peixes",
-};
+function normalizeSignName(signName: string): string {
+  return signName
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z]/g, "");
+}
+
+function denormalizeSignName(normalizedName: string): string {
+  const signMap: Record<string, string> = {
+    aries: "Áries",
+    touro: "Touro",
+    gemeos: "Gêmeos",
+    cancer: "Câncer",
+    leao: "Leão",
+    virgem: "Virgem",
+    libra: "Libra",
+    escorpiao: "Escorpião",
+    sagitario: "Sagitário",
+    capricornio: "Capricórnio",
+    aquario: "Aquário",
+    peixes: "Peixes",
+  };
+  return signMap[normalizedName] || normalizedName;
+}
 
 const schema = z.object({
   signo: z.string(),
@@ -32,7 +43,7 @@ const generateFn = createServerFn({ method: "GET" })
   .handler(async ({ data: { signo } }) => {
     setResponseHeader("Cache-Control", "public, max-age=3600, s-maxage=86400");
 
-    const properSignName = signMap[signo.toLowerCase()];
+    const properSignName = denormalizeSignName(signo.toLowerCase());
     if (!properSignName) {
       throw new Error(`Invalid sign: ${signo}`);
     }
@@ -43,10 +54,22 @@ const generateFn = createServerFn({ method: "GET" })
 
     const today = saoPauloDate.split(",")[0].trim();
 
-    const sign = await getDB().query.signs.findFirst({
-      where: eq(signs.namePt, properSignName),
-      columns: { id: true, namePt: true },
-    });
+    const [sign, allSigns] = await Promise.all([
+      getDB().query.signs.findFirst({
+        where: eq(signs.namePt, properSignName),
+        columns: { id: true, namePt: true, startDate: true, endDate: true },
+      }),
+      getDB().query.signs.findMany({
+        columns: {
+          id: true,
+          namePt: true,
+          emoji: true,
+          startDate: true,
+          endDate: true,
+        },
+        orderBy: (signs, { asc }) => [asc(signs.id)],
+      }),
+    ]);
 
     if (!sign) {
       throw new Error(`Sign ${signo} not found`);
@@ -59,9 +82,26 @@ const generateFn = createServerFn({ method: "GET" })
       ),
     });
 
+    // Format dates as dd/MM
+    const formatDate = (dateStr: string) => {
+      const [month, day] = dateStr.split("-");
+      return `${day}/${month}`;
+    };
+
+    const dateRange = `${formatDate(sign.startDate)} a ${formatDate(sign.endDate)}`;
+
+    const signosNavigation = allSigns.map((s) => ({
+      chave: normalizeSignName(s.namePt),
+      nome: s.namePt,
+      emoji: s.emoji,
+      dateRange: `${formatDate(s.startDate)} a ${formatDate(s.endDate)}`,
+    }));
+
     const returnData = {
       text: todayHoroscope?.fullText,
       sign: sign.namePt,
+      dateRange,
+      signosNavigation,
       today,
     };
 
@@ -93,7 +133,7 @@ export const Route = createFileRoute("/horoscopo-do-dia/$signo")({
   pendingComponent: LoadingSpinner,
   loader: ({ params: { signo } }) => generateFn({ data: { signo } }),
   head: ({ loaderData, params: { signo } }) => {
-    if (!loaderData) {
+    if (!loaderData || !loaderData.sign) {
       return {
         meta: [
           ...seo({
@@ -115,22 +155,6 @@ export const Route = createFileRoute("/horoscopo-do-dia/$signo")({
   },
   staleTime: 12 * 60 * 60 * 1000, // 12 hours
 });
-
-// Fallback signos data for the navigation
-const signosNavigation = [
-  { chave: "aries", nome: "Áries", emoji: "♈" },
-  { chave: "touro", nome: "Touro", emoji: "♉" },
-  { chave: "gemeos", nome: "Gêmeos", emoji: "♊" },
-  { chave: "cancer", nome: "Câncer", emoji: "♋" },
-  { chave: "leao", nome: "Leão", emoji: "♌" },
-  { chave: "virgem", nome: "Virgem", emoji: "♍" },
-  { chave: "libra", nome: "Libra", emoji: "♎" },
-  { chave: "escorpiao", nome: "Escorpião", emoji: "♏" },
-  { chave: "sagitario", nome: "Sagitário", emoji: "♐" },
-  { chave: "capricornio", nome: "Capricórnio", emoji: "♑" },
-  { chave: "aquario", nome: "Aquário", emoji: "♒" },
-  { chave: "peixes", nome: "Peixes", emoji: "♓" },
-];
 
 function LoadingSpinner() {
   return (
@@ -214,6 +238,9 @@ function RouteComponent() {
             )}{" "}
             para o signo de {horoscopeData.sign}
           </h1>
+          <p className="text-lg text-padrao/70 mb-4">
+            {horoscopeData.dateRange}
+          </p>
           <h2 className="text-lg md:text-xl text-padrao/80 mb-2 font-medium">
             Previsões de hoje{" "}
             {formatDateToPortuguese(
@@ -303,7 +330,7 @@ function RouteComponent() {
           </h2>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 md:gap-4">
-            {signosNavigation.map((dados) => (
+            {horoscopeData.signosNavigation.map((dados) => (
               <Link
                 key={dados.chave}
                 to="/horoscopo-do-dia/$signo"
@@ -320,6 +347,7 @@ function RouteComponent() {
                 <h3 className="font-semibold text-acento-mistico text-sm md:text-base">
                   {dados.nome}
                 </h3>
+                <p className="text-xs text-padrao/60 mt-1">{dados.dateRange}</p>
               </Link>
             ))}
           </div>
