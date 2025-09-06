@@ -13,6 +13,7 @@ import appCss from "~/styles/app.css?url";
 import { seo } from "~/utils/seo";
 import { Header } from "../components/Header";
 import { PostHogProvider } from "posthog-js/react";
+import { Footer } from "../components/Footer";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -55,7 +56,7 @@ export const Route = createRootRoute({
     ],
   }),
   errorComponent: DefaultCatchBoundary,
-  notFoundComponent: () => <NotFound />,  
+  notFoundComponent: () => <NotFound />,
   shellComponent: RootDocument,
 });
 
@@ -70,13 +71,14 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_KEY}
           options={{
             api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
-            defaults: '2025-05-24',
+            defaults: "2025-05-24",
             disable_external_dependency_loading: true,
-            debug: import.meta.env.MODE === 'development',
+            debug: import.meta.env.MODE === "development",
           }}
         >
           <Header />
           {children}
+          <Footer />
         </PostHogProvider>
         <TanStackRouterDevtools position="bottom-right" />
         <Scripts />

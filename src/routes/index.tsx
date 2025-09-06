@@ -3,7 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getDB } from "../db";
 import { setResponseHeader } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
-import { signs, horoscopeContent } from "../db/schema/schema";
+import { horoscopeContent } from "../db/schema/schema";
 
 function normalizeSignName(signName: string): string {
   return signName
@@ -45,13 +45,13 @@ const getSignos = createServerFn({ method: "GET" }).handler(async () => {
     const content = signo.horoscopeContent[0];
     const previewText = content?.previewText || "Clique para ver o horóscopo";
     const normalizedName = normalizeSignName(signo.namePt);
-    
+
     // Format dates as dd/MM
     const formatDate = (dateStr: string) => {
-      const [month, day] = dateStr.split('-');
+      const [month, day] = dateStr.split("-");
       return `${day}/${month}`;
     };
-    
+
     const dateRange = `${formatDate(signo.startDate)} a ${formatDate(signo.endDate)}`;
 
     return {
@@ -132,8 +132,8 @@ function Home() {
 
           {/* Subtitle */}
           <p className="text-lg md:text-xl lg:text-2xl text-padrao/80 mb-8 md:mb-12 max-w-3xl mx-auto leading-relaxed">
-            Nada de textos genéricos. Aqui você recebe previsões com alma,
-            direto no WhatsApp ou aqui mesmo
+            Nada de textos genéricos. Aqui você aprende sobre astrologia,
+            horóscopo, mapa astra e muito mais!
           </p>
 
           {/* CTA Buttons */}
@@ -200,9 +200,7 @@ function Home() {
                     <h3 className="font-semibold text-acento-mistico">
                       {signo.namePt}
                     </h3>
-                    <p className="text-xs text-padrao/60">
-                      {signo.dateRange}
-                    </p>
+                    <p className="text-xs text-padrao/60">{signo.dateRange}</p>
                   </div>
                 </div>
                 <p className="text-padrao/80 text-sm leading-relaxed">
@@ -284,7 +282,7 @@ function Home() {
       </section> */}
 
       {/* Upsell Leve Section */}
-      <section className="px-4 py-8 md:py-12 bg-secao-2">
+      {/* <section className="px-4 py-8 md:py-12 bg-secao-2">
         <div className="max-w-3xl mx-auto text-center">
           <div className="bg-gradient-to-br from-acento-mistico/5 to-toque-solar/5 rounded-xl p-6 md:p-8 border border-acento-mistico/10">
             <div className="flex justify-center mb-4">
@@ -310,38 +308,7 @@ function Home() {
             </button>
           </div>
         </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="px-4 py-8 md:py-12 bg-acento-mistico">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-6 sm:gap-8 mb-6">
-            <a
-              href="/sobre"
-              className="text-white/80 hover:text-white transition-colors text-sm md:text-base"
-            >
-              Sobre
-            </a>
-            <a
-              href="/privacidade"
-              className="text-white/80 hover:text-white transition-colors text-sm md:text-base"
-            >
-              Política de Privacidade
-            </a>
-            <a
-              href="/contato"
-              className="text-white/80 hover:text-white transition-colors text-sm md:text-base"
-            >
-              Contato
-            </a>
-          </div>
-
-          <p className="text-white/60 text-sm md:text-base max-w-2xl mx-auto">
-            Feito com carinho por brasileiros que acreditam no poder dos astros
-            ✨
-          </p>
-        </div>
-      </footer>
+      </section> */}
     </main>
   );
 }
