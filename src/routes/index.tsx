@@ -4,6 +4,7 @@ import { getDB } from "../db";
 import { setResponseHeader } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { horoscopeContent } from "../db/schema/schema";
+import { usePageView, useAnalytics, ANALYTICS_EVENTS } from "../utils/analytics";
 
 function normalizeSignName(signName: string): string {
   return signName
@@ -74,6 +75,12 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const { signos } = Route.useLoaderData();
+  const { track } = useAnalytics();
+  
+  // Track home page view
+  usePageView('home', {
+    total_signs_displayed: signos?.length || 0
+  });
 
   return (
     <main className="min-h-screen bg-principal overflow-hidden">
@@ -163,11 +170,15 @@ function Home() {
 
             {/* Secondary Button */}
             <button
-              onClick={() =>
+              onClick={() => {
+                track(ANALYTICS_EVENTS.CTA_BUTTON_CLICKED, {
+                  button_text: 'Ver horóscopo de hoje',
+                  location: 'hero_section'
+                });
                 document
                   .getElementById("horoscope-section")
-                  ?.scrollIntoView({ behavior: "smooth" })
-              }
+                  ?.scrollIntoView({ behavior: "smooth" });
+              }}
               className="w-full sm:w-auto bg-transparent border-2 border-acento-mistico text-acento-mistico hover:bg-acento-mistico/10 hover:border-acento-mistico font-semibold py-4 px-8 rounded-full transition-all duration-300 transform hover:scale-105"
             >
               Ver horóscopo de hoje
@@ -190,8 +201,15 @@ function Home() {
             {signos.map((signo) => (
               <Link
                 key={signo.id}
-                to="/horoscopo-do-dia/$signo"
+                to="/horoscopo-do-dia{-$categoria}/$signo"
                 params={{ signo: signo.normalizedName }}
+                onClick={() => {
+                  track(ANALYTICS_EVENTS.SIGN_CARD_CLICKED, {
+                    sign: signo.namePt,
+                    sign_id: signo.id,
+                    location: 'home_page'
+                  });
+                }}
                 className="bg-white rounded-xl p-4 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group hover:scale-105 block"
               >
                 <div className="flex items-center gap-3 mb-3">

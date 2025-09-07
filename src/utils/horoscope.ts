@@ -116,10 +116,30 @@ function getZodiacSign(raHours: number, decDeg: number): string {
   return signs[signIndex];
 }
 
+const categoriaPlanetas: Record<string, string[]> = {
+  amor: ["venus", "moon", "mars"], // Amor: relacionamentos, emoções, paixão
+  carreira: ["saturn", "jupiter", "mercury"], // Carreira: estrutura, expansão, comunicação
+  saude: ["mars", "saturn", "moon"], // Saúde: energia, disciplina, bem-estar emocional
+  financas: ["jupiter", "venus", "saturn"], // Finanças: abundância, valores, limites
+  geral: [], // Geral: usa todos os transitos sem filtro
+  familia: ["moon", "saturn", "jupiter"], // Família: lar, estrutura, crescimento
+  amizade: ["mercury", "venus", "uranus"], // Amizade: comunicação, harmonia, inovação
+  criatividade: ["venus", "mars", "neptune"], // Criatividade: beleza, ação, inspiração
+};
+
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // 📡 Função para buscar dados e gerar horóscopo
-export async function generateHoroscope(dataISO: string, signoUsuario: string) {
+export async function generateHoroscope(
+  dataISO: string,
+  signoUsuario: string,
+  categoria: string = 'geral'
+) {
+  // Validação da categoria
+  if (!Object.keys(categoriaPlanetas).includes(categoria.toLowerCase())) {
+    throw new Error(`Categoria invalida: ${categoria}`);
+  }
+
   const url = `https://api.astronomyapi.com/api/v2/bodies/positions?latitude=0&longitude=0&elevation=0&from_date=${dataISO}&to_date=${dataISO}&time=00:00:00`;
 
   const res = await fetchWithCache(url, {
@@ -128,18 +148,18 @@ export async function generateHoroscope(dataISO: string, signoUsuario: string) {
 
   const json = await res.json();
 
-  // Coletar transitos de TODOS os bodies retornados
+  // Coletar transitos de TODOS os bodies
   const transitos: string[] = [];
   let moonPhase = "";
 
   json.data.table.rows.forEach((row: any) => {
-    const id = row.entry.id;
-    const planetaData = row.cells[0]; // Posição do dia (já que from_date == to_date)
+    const id = row.entry.id.toLowerCase();
+    const planetaData = row.cells[0];
 
-    if (!planetaData || !planetaData.position?.equatorial) return; // Skip se dados inválidos
+    if (!planetaData || !planetaData.position?.equatorial) return;
 
     const nomePlaneta =
-      mapaIdsParaNomes[id] || id.charAt(0).toUpperCase() + id.slice(1); // Fallback: 'sun' -> 'Sun'
+      mapaIdsParaNomes[id] || id.charAt(0).toUpperCase() + id.slice(1);
     const ra = planetaData.position.equatorial.right_ascension?.hours || 0;
     const dec = planetaData.position.equatorial.declination?.degrees || 0;
     const signo = getZodiacSign(ra, dec);
@@ -147,14 +167,18 @@ export async function generateHoroscope(dataISO: string, signoUsuario: string) {
     let extra = "";
     if (id === "moon") {
       moonPhase = planetaData.extra_info?.phase?.string || "Desconhecida";
-      extra = ` (fase: ${moonPhase})`;
+      extra = ` fase ${moonPhase}`;
     }
 
     transitos.push(`${nomePlaneta} em ${signo}${extra}`);
   });
 
-  // Prompt para OpenAI, agora com todos os transitos para mais variedade
-  const prompt = `Gere um horóscopo diário interessante para o signo ${signoUsuario}, incorporando estes transitos astronômicos reais: ${transitos.join(", ")}. Torne positivo e motivador, com no máximo 2 frases. Inclua conselhos práticos baseados nos transitos, mas mantenha leve e divertido.`;
+  // Prompt adaptado para a categoria, mantendo seu estilo
+  let prompt = `Gere um horoscopo diario interessante para o signo ${signoUsuario}, focado em ${categoria}, incorporando estes transitos astronomicos reais: ${transitos.join(", ") || "nenhum especifico"}. Torne positivo e motivador, com no maximo 2 frases. Inclua conselhos praticos baseados nos transitos, mas mantenha leve e divertido.`;
+  const planetasFoco = categoriaPlanetas[categoria.toLowerCase()];
+  if (planetasFoco.length > 0) {
+    prompt += ` Enfatize os efeitos de ${planetasFoco.map((id) => mapaIdsParaNomes[id] || id).join(", ")} para ${categoria}.`;
+  }
 
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
@@ -162,7 +186,7 @@ export async function generateHoroscope(dataISO: string, signoUsuario: string) {
       {
         role: "system",
         content:
-          "Você é um astrólogo criativo que gera horóscopos baseados em dados reais. Você não deve usar emojis, caracteres especiais como asteriscos, -- ou qualquer outra coisa que não sejam somente letras e pontuação do alfabeto Brasileiro.",
+          "Voce e um astrologo criativo que gera horoscopos baseados em dados reais. Voce nao deve usar emojis, caracteres especiais como asteriscos, -- ou qualquer outra coisa que nao sejam somente letras e pontuacao do alfabeto Brasileiro.",
       },
       { role: "user", content: prompt },
     ],

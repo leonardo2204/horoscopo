@@ -1,7 +1,6 @@
 /// <reference types="vite/client" />
 import {
   HeadContent,
-  Link,
   Scripts,
   createRootRoute,
 } from "@tanstack/react-router";
@@ -14,6 +13,7 @@ import { seo } from "~/utils/seo";
 import { Header } from "../components/Header";
 import { PostHogProvider } from "posthog-js/react";
 import { Footer } from "../components/Footer";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -60,6 +60,8 @@ export const Route = createRootRoute({
   shellComponent: RootDocument,
 });
 
+const queryClient = new QueryClient();
+
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html>
@@ -76,9 +78,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             debug: import.meta.env.MODE === "development",
           }}
         >
-          <Header />
-          {children}
-          <Footer />
+          <QueryClientProvider client={queryClient}>
+            <Header />
+            {children}
+            <Footer />
+          </QueryClientProvider>
         </PostHogProvider>
         <TanStackRouterDevtools position="bottom-right" />
         <Scripts />

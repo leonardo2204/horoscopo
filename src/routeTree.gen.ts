@@ -10,43 +10,44 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as HoroscopoDoDiaSignoRouteImport } from './routes/horoscopo-do-dia/$signo'
+import { Route as HoroscopoDoDiaChar123CategoriaChar125SignoRouteImport } from './routes/horoscopo-do-dia{-$categoria}/$signo'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const HoroscopoDoDiaSignoRoute = HoroscopoDoDiaSignoRouteImport.update({
-  id: '/horoscopo-do-dia/$signo',
-  path: '/horoscopo-do-dia/$signo',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const HoroscopoDoDiaChar123CategoriaChar125SignoRoute =
+  HoroscopoDoDiaChar123CategoriaChar125SignoRouteImport.update({
+    id: '/horoscopo-do-dia{-$categoria}/$signo',
+    path: '/horoscopo-do-dia{-$categoria}/$signo',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/horoscopo-do-dia/$signo': typeof HoroscopoDoDiaSignoRoute
+  '/horoscopo-do-dia{-$categoria}/$signo': typeof HoroscopoDoDiaChar123CategoriaChar125SignoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/horoscopo-do-dia/$signo': typeof HoroscopoDoDiaSignoRoute
+  '/horoscopo-do-dia{-$categoria}/$signo': typeof HoroscopoDoDiaChar123CategoriaChar125SignoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/horoscopo-do-dia/$signo': typeof HoroscopoDoDiaSignoRoute
+  '/horoscopo-do-dia{-$categoria}/$signo': typeof HoroscopoDoDiaChar123CategoriaChar125SignoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/horoscopo-do-dia/$signo'
+  fullPaths: '/' | '/horoscopo-do-dia{-$categoria}/$signo'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/horoscopo-do-dia/$signo'
-  id: '__root__' | '/' | '/horoscopo-do-dia/$signo'
+  to: '/' | '/horoscopo-do-dia{-$categoria}/$signo'
+  id: '__root__' | '/' | '/horoscopo-do-dia{-$categoria}/$signo'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  HoroscopoDoDiaSignoRoute: typeof HoroscopoDoDiaSignoRoute
+  HoroscopoDoDiaChar123CategoriaChar125SignoRoute: typeof HoroscopoDoDiaChar123CategoriaChar125SignoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -58,11 +59,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/horoscopo-do-dia/$signo': {
-      id: '/horoscopo-do-dia/$signo'
-      path: '/horoscopo-do-dia/$signo'
-      fullPath: '/horoscopo-do-dia/$signo'
-      preLoaderRoute: typeof HoroscopoDoDiaSignoRouteImport
+    '/horoscopo-do-dia{-$categoria}/$signo': {
+      id: '/horoscopo-do-dia{-$categoria}/$signo'
+      path: '/horoscopo-do-dia{-$categoria}/$signo'
+      fullPath: '/horoscopo-do-dia{-$categoria}/$signo'
+      preLoaderRoute: typeof HoroscopoDoDiaChar123CategoriaChar125SignoRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -70,7 +71,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  HoroscopoDoDiaSignoRoute: HoroscopoDoDiaSignoRoute,
+  HoroscopoDoDiaChar123CategoriaChar125SignoRoute:
+    HoroscopoDoDiaChar123CategoriaChar125SignoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

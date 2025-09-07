@@ -6,7 +6,18 @@ import z from "zod";
 import { setResponseHeader } from "@tanstack/react-start/server";
 import { getDB } from "../../db";
 import { and, eq } from "drizzle-orm";
-import { horoscopeContent, signs } from "../../db/schema/schema";
+import {
+  horoscopeCategories,
+  horoscopeContent,
+  horoscopeContentCategories,
+  signs,
+} from "../../db/schema/schema";
+import HoroscopeCategories from "../../components/HoroscopeCategories";
+import {
+  usePageView,
+  useAnalytics,
+  ANALYTICS_EVENTS,
+} from "../../utils/analytics";
 
 function normalizeSignName(signName: string): string {
   return signName
@@ -36,12 +47,34 @@ function denormalizeSignName(normalizedName: string): string {
 
 const schema = z.object({
   signo: z.string(),
+  categoria: z.string().optional(),
 });
 
 const generateFn = createServerFn({ method: "GET" })
   .validator(schema)
-  .handler(async ({ data: { signo } }) => {
+  .handler(async ({ data: { signo, categoria } }) => {
     setResponseHeader("Cache-Control", "public, max-age=3600, s-maxage=86400");
+
+    let categoryId: number | null = null;
+    let categoryName: string | null = null;
+
+    if (categoria) {
+      const res = await getDB().query.horoscopeCategories.findFirst({
+        columns: {
+          id: true,
+          name: true,
+          displayNamePt: true,
+        },
+        where: eq(horoscopeCategories.name, categoria.replace("-", "")),
+      });
+
+      if (!res) {
+        throw new Error("categoria nao encontrada");
+      }
+
+      categoryId = res.id;
+      categoryName = res.displayNamePt;
+    }
 
     const properSignName = denormalizeSignName(signo.toLowerCase());
     if (!properSignName) {
@@ -75,12 +108,33 @@ const generateFn = createServerFn({ method: "GET" })
       throw new Error(`Sign ${signo} not found`);
     }
 
-    const todayHoroscope = await getDB().query.horoscopeContent.findFirst({
-      where: and(
-        eq(horoscopeContent.effectiveDate, today),
-        eq(horoscopeContent.signId, sign.id)
-      ),
-    });
+    const hasCategory = categoria && !!categoryId;
+
+    const todayHoroscope = hasCategory
+      ? await getDB()
+          .select()
+          .from(horoscopeContent)
+          .innerJoin(
+            horoscopeContentCategories,
+            eq(
+              horoscopeContent.id,
+              horoscopeContentCategories.horoscopeContentId
+            )
+          )
+          .where(
+            and(
+              eq(horoscopeContentCategories.categoryId, categoryId!),
+              eq(horoscopeContent.effectiveDate, today),
+              eq(horoscopeContent.signId, sign.id)
+            )
+          )
+          .then((rows) => (rows.length > 0 ? rows[0].horoscope_content : null))
+      : await getDB().query.horoscopeContent.findFirst({
+          where: and(
+            eq(horoscopeContent.effectiveDate, today),
+            eq(horoscopeContent.signId, sign.id)
+          ),
+        });
 
     // Format dates as dd/MM
     const formatDate = (dateStr: string) => {
@@ -100,39 +154,96 @@ const generateFn = createServerFn({ method: "GET" })
     const returnData = {
       text: todayHoroscope?.fullText,
       sign: sign.namePt,
+      category: categoryName,
       dateRange,
       signosNavigation,
       today,
     };
 
     if (!todayHoroscope) {
-      const data = await generateHoroscope(today, signo);
+      const data = await generateHoroscope(
+        today,
+        signo,
+        categoria?.replace("-", "") || undefined
+      );
 
       if (!data) {
         throw new Error("not able to generate content");
       }
 
-      await getDB()
-        .insert(horoscopeContent)
-        .values({
-          signId: sign.id,
-          effectiveDate: today,
-          fullText: data,
-          previewText: data?.slice(0, 30),
-          typeId: 1,
+      if (!hasCategory) {
+        await getDB()
+          .insert(horoscopeContent)
+          .values({
+            signId: sign.id,
+            effectiveDate: today,
+            fullText: data,
+            previewText: data?.slice(0, 30),
+            typeId: 1,
+          });
+
+        returnData.text = data;
+      } else {
+        // check if general sign for today exists
+
+        const res = await getDB().query.horoscopeContent.findFirst({
+          columns: { id: true },
+          where: and(
+            eq(horoscopeContent.effectiveDate, today),
+            eq(horoscopeContent.signId, sign.id)
+          ),
         });
 
-      returnData.text = data;
+        //if not, we must create first
+        if (!res) {
+          const data2 = await generateHoroscope(today, signo);
+          if (!data2) {
+            throw new Error("nao criou horoscopo de hoje (sem categoria)");
+          }
+
+          // create the general content and the category one
+          await getDB().transaction(async (tx) => {
+            const ins = await tx
+              .insert(horoscopeContent)
+              .values({
+                signId: sign.id,
+                effectiveDate: today,
+                fullText: data,
+                previewText: data?.slice(0, 30),
+                typeId: 1,
+              })
+              .returning({ insertedId: horoscopeContent.id });
+
+            await tx.insert(horoscopeContentCategories).values({
+              categoryId: categoryId!,
+              horoscopeContentId: ins[0].insertedId,
+              contentText: data,
+            });
+          });
+
+          returnData.text = data2;
+        } else {
+          //otherwise parent exists, only the category must be created
+          await getDB().insert(horoscopeContentCategories).values({
+            categoryId: categoryId!,
+            horoscopeContentId: res.id,
+            contentText: data,
+          });
+
+          returnData.text = data;
+        }
+      }
     }
 
     return returnData;
   });
 
-export const Route = createFileRoute("/horoscopo-do-dia/$signo")({
+export const Route = createFileRoute("/horoscopo-do-dia{-$categoria}/$signo")({
   component: RouteComponent,
   pendingComponent: LoadingSpinner,
-  loader: ({ params: { signo } }) => generateFn({ data: { signo } }),
-  head: ({ loaderData, params: { signo } }) => {
+  loader: ({ params: { signo, categoria } }) =>
+    generateFn({ data: { signo, categoria } }),
+  head: ({ loaderData, params: { signo, categoria } }) => {
     if (!loaderData || !loaderData.sign) {
       return {
         meta: [
@@ -147,8 +258,8 @@ export const Route = createFileRoute("/horoscopo-do-dia/$signo")({
     return {
       meta: [
         ...seo({
-          title: `Horóscopo de hoje, ${formatDateToPortuguese(loaderData.today)}, para o signo de ${loaderData.sign}`,
-          description: `Veja as previsões de ${signo} para hoje, ${formatDateToPortuguese(loaderData.today)}: amor, dinheiro, trabalho e bem-estar. Dicas práticas + números e cor da sorte. Leia agora!`,
+          title: `Horóscopo de ${!!loaderData.category ? loaderData.category : "hoje"}, ${formatDateToPortuguese(loaderData.today)}, para o signo de ${loaderData.sign}`,
+          description: `Veja as previsões de ${signo}${!!loaderData.category ? ` e ${loaderData.category}` : ""} para hoje, ${formatDateToPortuguese(loaderData.today)}: amor, dinheiro, trabalho e bem-estar. Dicas práticas + números e cor da sorte. Leia agora!`,
         }),
       ],
     };
@@ -178,8 +289,19 @@ function LoadingSpinner() {
 }
 
 function RouteComponent() {
-  const { signo } = useParams({ from: "/horoscopo-do-dia/$signo" });
+  const { signo, categoria } = useParams({
+    from: "/horoscopo-do-dia{-$categoria}/$signo",
+  });
   const horoscopeData = Route.useLoaderData();
+  const { track } = useAnalytics();
+
+  // Track horoscope page view
+  usePageView("horoscope_detail", {
+    sign: horoscopeData?.sign,
+    category: horoscopeData?.category,
+    has_category: !!categoria,
+    date: horoscopeData?.today,
+  });
 
   // Handle loading and error states
   if (!horoscopeData) {
@@ -200,7 +322,13 @@ function RouteComponent() {
         <div className="text-center">
           <div className="text-red-500 mb-4">Erro ao carregar o horóscopo</div>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              track(ANALYTICS_EVENTS.ERROR_RETRY_CLICKED, {
+                component: "horoscope_page",
+                sign: signo,
+              });
+              window.location.reload();
+            }}
             className="bg-acento-mistico text-white px-4 py-2 rounded"
           >
             Tentar novamente
@@ -230,12 +358,14 @@ function RouteComponent() {
             <span className="text-4xl md:text-5xl lg:text-6xl mr-3">
               {/* {dadosSigno.emoji} */}
             </span>
-            Horóscopo do dia{" "}
-            {formatDateToPortuguese(
-              new Date().toLocaleDateString("pt-br", {
-                timeZone: "America/Sao_Paulo",
-              })
-            )}{" "}
+            Horóscopo{" "}
+            {horoscopeData.category
+              ? `sobre ${horoscopeData.category}`
+              : `do dia ${formatDateToPortuguese(
+                  new Date().toLocaleDateString("pt-br", {
+                    timeZone: "America/Sao_Paulo",
+                  })
+                )}`}{" "}
             para o signo de {horoscopeData.sign}
           </h1>
           <p className="text-lg text-padrao/70 mb-4">
@@ -257,66 +387,12 @@ function RouteComponent() {
       </section>
 
       {/* Horóscopo detalhado */}
-      <section className="px-4 py-8 md:py-12">
+      <section className="px-4 py-8 md:pb-12">
         <div className="max-w-3xl mx-auto">
+          <HoroscopeCategories sign={signo} />
           <div className="bg-white rounded-2xl p-6 md:p-8 shadow-lg">
             <div className="prose prose-lg max-w-none">
               {horoscopeData.text}
-              {/* {dadosSigno.completo
-                .split("\n\n")
-                .map((paragrafo: string, index: number) => {
-                  if (paragrafo.startsWith("**Dica do dia:**")) {
-                    return (
-                      <div
-                        key={index}
-                        className="bg-toque-solar/10 rounded-xl p-4 my-6 border-l-4 border-toque-solar"
-                      >
-                        <p className="font-semibold text-toque-solar mb-2 flex items-center gap-2">
-                          <span>💡</span> Dica do dia
-                        </p>
-                        <p className="text-padrao mb-0">
-                          {paragrafo.replace("**Dica do dia:**", "").trim()}
-                        </p>
-                      </div>
-                    );
-                  } else if (paragrafo.startsWith("**Mantra:**")) {
-                    return (
-                      <div
-                        key={index}
-                        className="bg-acento-mistico/10 rounded-xl p-4 my-6 text-center border border-acento-mistico/20"
-                      >
-                        <p className="font-semibold text-acento-mistico mb-2 flex items-center justify-center gap-2">
-                          <span>🧘‍♀️</span> Mantra do dia
-                        </p>
-                        <p className="text-lg italic text-acento-mistico font-medium mb-0">
-                          {paragrafo
-                            .replace("**Mantra:**", "")
-                            .trim()
-                            .replace(/"/g, "")}
-                        </p>
-                      </div>
-                    );
-                  } else {
-                    return (
-                      <p
-                        key={index}
-                        className="text-padrao text-base md:text-lg leading-relaxed mb-4"
-                      >
-                        {paragrafo
-                          .split("**")
-                          .map((parte: string, i: number) =>
-                            i % 2 === 1 ? (
-                              <strong key={i} className="text-acento-mistico">
-                                {parte}
-                              </strong>
-                            ) : (
-                              parte
-                            )
-                          )}
-                      </p>
-                    );
-                  }
-                })} */}
             </div>
           </div>
         </div>
@@ -333,8 +409,18 @@ function RouteComponent() {
             {horoscopeData.signosNavigation.map((dados) => (
               <Link
                 key={dados.chave}
-                to="/horoscopo-do-dia/$signo"
+                to="/horoscopo-do-dia{-$categoria}/$signo"
                 params={{ signo: dados.chave }}
+                onClick={() => {
+                  if (dados.chave !== signo) {
+                    track(ANALYTICS_EVENTS.SIGN_NAVIGATION_CLICKED, {
+                      from_sign: horoscopeData.sign,
+                      to_sign: dados.nome,
+                      category: horoscopeData.category,
+                      location: "sign_navigation",
+                    });
+                  }
+                }}
                 className={`bg-white rounded-xl p-3 md:p-4 shadow-sm hover:shadow-lg transition-all duration-300 text-center group hover:scale-105 ${
                   dados.chave === signo
                     ? "ring-2 ring-acento-mistico bg-acento-mistico/5"
