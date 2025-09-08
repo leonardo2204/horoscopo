@@ -4,8 +4,10 @@ import { createServerFn, useServerFn } from "@tanstack/react-start";
 import { getDB } from "../db";
 import { useQuery } from "@tanstack/react-query";
 import { useAnalytics, ANALYTICS_EVENTS } from "../utils/analytics";
+import { setResponseHeader } from "@tanstack/react-start/server";
 
 const getCategoriesFn = createServerFn().handler(async () => {
+  setResponseHeader("cache-control", "public, max-age=43200, s-maxage=3600");
   return await getDB().query.horoscopeCategories.findMany();
 });
 
