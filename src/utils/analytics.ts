@@ -51,6 +51,7 @@ export const ANALYTICS_EVENTS = {
   // Interaction events
   SCROLL_TO_SECTION: 'scroll_to_section',
   ERROR_RETRY_CLICKED: 'error_retry_clicked',
+  SHARE_CLICKED: 'share_clicked',
   
   // Category events
   CATEGORY_SCROLL: 'category_scroll',

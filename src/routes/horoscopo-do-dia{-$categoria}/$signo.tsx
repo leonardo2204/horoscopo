@@ -13,6 +13,7 @@ import {
   signs,
 } from "../../db/schema/schema";
 import HoroscopeCategories from "../../components/HoroscopeCategories";
+import SocialShare from "../../components/SocialShare";
 import {
   usePageView,
   useAnalytics,
@@ -347,12 +348,20 @@ function RouteComponent() {
             Início
           </Link>
           <span className="mx-2">›</span>
-          <span>Horóscopo de {horoscopeData.sign}</span>
+          <Link
+            to="/horoscopo-do-dia{-$categoria}/$signo"
+            params={{ signo: signo, categoria: undefined }}
+          >
+            Horóscopo de {horoscopeData.sign}
+          </Link>
+          <span>
+            {horoscopeData.category ? ` › ${horoscopeData.category}` : ""}
+          </span>
         </nav>
       </div>
 
       {/* Hero com data atual */}
-      <section className="px-4 py-8 md:py-12 bg-gradient-to-br from-acento-mistico/5 to-toque-solar/5">
+      <section className="px-4 py-4 md:py-8 bg-gradient-to-br from-acento-mistico/5 to-toque-solar/5">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-acento-mistico mb-4">
             <span className="text-4xl md:text-5xl lg:text-6xl mr-3">
@@ -397,6 +406,14 @@ function RouteComponent() {
           </div>
         </div>
       </section>
+
+      {/* Social Share */}
+      <SocialShare
+        text={horoscopeData.text}
+        url={typeof window !== "undefined" ? window.location.href : ""}
+        sign={horoscopeData.sign}
+        category={horoscopeData.category || undefined}
+      />
 
       {/* Outros signos */}
       <section className="px-4 py-8 md:py-12 bg-secao-1">
