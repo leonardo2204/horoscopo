@@ -245,13 +245,25 @@ export const Route = createFileRoute("/horoscopo-do-dia{-$categoria}/$signo")({
   loader: ({ params: { signo, categoria } }) =>
     generateFn({ data: { signo, categoria } }),
   head: ({ loaderData, params: { signo, categoria } }) => {
+    const canonicalUrl = new URL(
+      `/horoscopo-do-dia${!!categoria ? `${categoria}` : ""}/${signo}`,
+      "https://meuhoroscopo.com"
+    );
+
     if (!loaderData || !loaderData.sign) {
       return {
         meta: [
           ...seo({
             title: `Horóscopo de hoje para o signo de ${signo}`,
             description: `Veja as previsões de ${signo} para hoje: amor, dinheiro, trabalho e bem-estar. Dicas práticas + números e cor da sorte. Leia agora!`,
+            url: canonicalUrl.toString(),
           }),
+        ],
+        links: [
+          {
+            rel: "canonical",
+            href: canonicalUrl.toString(),
+          },
         ],
       };
     }
@@ -261,7 +273,14 @@ export const Route = createFileRoute("/horoscopo-do-dia{-$categoria}/$signo")({
         ...seo({
           title: `Horóscopo de ${!!loaderData.category ? loaderData.category : "hoje"}, ${formatDateToPortuguese(loaderData.today)}, para o signo de ${loaderData.sign}`,
           description: `Veja as previsões de ${signo}${!!loaderData.category ? ` e ${loaderData.category}` : ""} para hoje, ${formatDateToPortuguese(loaderData.today)}: amor, dinheiro, trabalho e bem-estar. Dicas práticas + números e cor da sorte. Leia agora!`,
+          url: canonicalUrl.toString(),
         }),
+      ],
+      links: [
+        {
+          rel: "canonical",
+          href: canonicalUrl.toString(),
+        },
       ],
     };
   },
