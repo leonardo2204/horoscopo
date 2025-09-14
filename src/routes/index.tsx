@@ -133,14 +133,14 @@ function Home() {
           {/* Main Title */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-acento-mistico mb-4 md:mb-6">
             Seu horóscopo diário,{" "}
-            <span className="text-toque-solar">com vibe brasileira</span>{" "}
+            <span className="text-toque-solar">personalizado para você</span>{" "}
             <span className="inline-block">✨</span>
           </h1>
 
           {/* Subtitle */}
           <p className="text-lg md:text-xl lg:text-2xl text-padrao/80 mb-8 md:mb-12 max-w-3xl mx-auto leading-relaxed">
             Nada de textos genéricos. Aqui você aprende sobre astrologia,
-            horóscopo, mapa astra e muito mais!
+            horóscopo, mapa astral e muito mais!
           </p>
 
           {/* CTA Buttons */}
