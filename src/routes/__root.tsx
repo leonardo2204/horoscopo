@@ -2,7 +2,7 @@
 import {
   HeadContent,
   Scripts,
-  createRootRoute,
+  createRootRouteWithContext,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import * as React from "react";
@@ -14,8 +14,26 @@ import { Header } from "../components/Header";
 import { PostHogProvider } from "posthog-js/react";
 import { Footer } from "../components/Footer";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { User } from "better-auth";
+import { auth } from "../lib/auth";
+import { createServerFn } from "@tanstack/react-start";
+import { getHeaders } from "@tanstack/react-start/server";
 
-export const Route = createRootRoute({
+interface RouteContext {
+  user?: User;
+}
+
+const getSessionFn = createServerFn({ method: "POST" }).handler(async () => {
+  const headers = getHeaders();
+
+  const session = await auth.api.getSession({
+    headers: headers as any,
+  });
+
+  return session?.user;
+});
+
+export const Route = createRootRouteWithContext<RouteContext>()({
   head: () => ({
     meta: [
       {
@@ -58,6 +76,10 @@ export const Route = createRootRoute({
   errorComponent: DefaultCatchBoundary,
   notFoundComponent: () => <NotFound />,
   shellComponent: RootDocument,
+  beforeLoad: async () => {
+    const user = await getSessionFn();
+    return { user };
+  },
 });
 
 const queryClient = new QueryClient();

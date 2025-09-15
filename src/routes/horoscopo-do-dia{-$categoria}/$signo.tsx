@@ -19,6 +19,7 @@ import {
 } from "../../db/schema/schema";
 import HoroscopeCategories from "../../components/HoroscopeCategories";
 import SocialShare from "../../components/SocialShare";
+import HoroscopeVoting from "../../components/HoroscopeVoting";
 import {
   usePageView,
   useAnalytics,
@@ -160,7 +161,9 @@ const generateFn = createServerFn({ method: "GET" })
     const returnData = {
       text: todayHoroscope?.fullText,
       sign: sign.namePt,
+      signId: sign.id,
       category: categoryName,
+      categoryId: categoryId,
       dateRange,
       signosNavigation,
       today,
@@ -427,6 +430,11 @@ function RouteComponent() {
             <div className="prose prose-lg max-w-none">
               {horoscopeData.text}
             </div>
+            <HoroscopeVoting
+              signId={horoscopeData.signId}
+              effectiveDate={horoscopeData.today}
+              categoryId={horoscopeData.categoryId || undefined}
+            />
           </div>
         </div>
       </section>

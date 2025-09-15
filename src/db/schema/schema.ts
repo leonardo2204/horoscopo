@@ -1,5 +1,6 @@
 import { sqliteTable, text, integer, real, primaryKey, index, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { relations, sql } from 'drizzle-orm';
+import { user } from './auth-schema';
 
 // Signs table - master data for zodiac signs
 export const signs = sqliteTable('signs', {
@@ -84,6 +85,36 @@ export const horoscopeContentCategories = sqliteTable('horoscope_content_categor
   index('idx_hcc_category_id').on(table.categoryId),
 ]);
 
+// Ratings for overall horoscope content
+export const horoscopeRatings = sqliteTable('horoscope_ratings', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  horoscopeContentId: integer('horoscope_content_id').notNull().references(() => horoscopeContent.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  rating: integer('rating', { mode: 'boolean' }).notNull(),
+  createdAt: text('created_at').notNull().default(sql`(datetime('now'))`),
+}, (table) => [
+  index('idx_horoscope_ratings_content_id').on(table.horoscopeContentId),
+  index('idx_horoscope_ratings_user_id').on(table.userId),
+  uniqueIndex('unique_horoscope_rating_per_user').on(table.horoscopeContentId, table.userId),
+]);
+
+// Ratings for specific category content within horoscopes
+export const horoscopeCategoryRatings = sqliteTable('horoscope_category_ratings', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  horoscopeContentId: integer('horoscope_content_id').notNull().references(() => horoscopeContent.id, { onDelete: 'cascade' }),
+  categoryId: integer('category_id').notNull().references(() => horoscopeCategories.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  rating: integer('rating', { mode: 'boolean' }).notNull(),
+  createdAt: text('created_at').notNull().default(sql`(datetime('now'))`),
+}, (table) => [
+  index('idx_hcr_content_id').on(table.horoscopeContentId),
+  index('idx_hcr_category_id').on(table.categoryId),
+  index('idx_hcr_user_id').on(table.userId),
+  uniqueIndex('unique_category_rating_per_user').on(table.horoscopeContentId, table.categoryId, table.userId),
+  // Foreign key constraint to ensure the content-category combination exists
+  index('idx_hcr_content_category').on(table.horoscopeContentId, table.categoryId),
+]);
+
 // Relations
 export const signsRelations = relations(signs, ({ many }) => ({
   horoscopeContent: many(horoscopeContent),
@@ -103,6 +134,8 @@ export const horoscopeContentRelations = relations(horoscopeContent, ({ one, man
     references: [horoscopeTypes.id],
   }),
   categories: many(horoscopeContentCategories),
+  ratings: many(horoscopeRatings),
+  categoryRatings: many(horoscopeCategoryRatings),
 }));
 
 export const horoscopeCategoriesRelations = relations(horoscopeCategories, ({ many }) => ({
@@ -120,9 +153,37 @@ export const horoscopeContentCategoriesRelations = relations(horoscopeContentCat
   }),
 }));
 
+export const horoscopeRatingsRelations = relations(horoscopeRatings, ({ one }) => ({
+  horoscopeContent: one(horoscopeContent, {
+    fields: [horoscopeRatings.horoscopeContentId],
+    references: [horoscopeContent.id],
+  }),
+  user: one(user, {
+    fields: [horoscopeRatings.userId],
+    references: [user.id],
+  }),
+}));
+
+export const horoscopeCategoryRatingsRelations = relations(horoscopeCategoryRatings, ({ one }) => ({
+  horoscopeContent: one(horoscopeContent, {
+    fields: [horoscopeCategoryRatings.horoscopeContentId],
+    references: [horoscopeContent.id],
+  }),
+  category: one(horoscopeCategories, {
+    fields: [horoscopeCategoryRatings.categoryId],
+    references: [horoscopeCategories.id],
+  }),
+  user: one(user, {
+    fields: [horoscopeCategoryRatings.userId],
+    references: [user.id],
+  }),
+}));
+
 export type Signs = typeof signs.$inferSelect;
 export type HoroscopeTypes = typeof horoscopeTypes.$inferSelect;
 export type HoroscopeContent = typeof horoscopeContent.$inferSelect;
 export type AstronomicalData = typeof astronomicalData.$inferSelect;
 export type HoroscopeCategories = typeof horoscopeCategories.$inferSelect;
 export type HoroscopeContentCategories = typeof horoscopeContentCategories.$inferSelect;
+export type HoroscopeRatings = typeof horoscopeRatings.$inferSelect;
+export type HoroscopeCategoryRatings = typeof horoscopeCategoryRatings.$inferSelect;

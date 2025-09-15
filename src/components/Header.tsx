@@ -3,10 +3,10 @@ import { Link } from "@tanstack/react-router";
 export function Header() {
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
-      <div className="max-w-6xl mx-auto px-4 py-4">
+      <div className="max-w-6xl mx-auto px-4 py-2">
         <div className="flex justify-between items-center">
           <Link to="/" className="flex items-center gap-2">
-            <img src="/logo.png" width={48} height={48} />
+            <img src="/logo.png" width={48} height={32} />
             <span className="text-xl font-bold text-acento-mistico">
               Meu Horóscopo
             </span>
