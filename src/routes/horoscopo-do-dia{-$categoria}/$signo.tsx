@@ -1,4 +1,9 @@
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  notFound,
+  useParams,
+} from "@tanstack/react-router";
 import { formatDateToPortuguese, seo } from "~/utils/seo";
 import { createServerFn } from "@tanstack/react-start";
 import { generateHoroscope } from "../../utils/horoscope";
@@ -70,7 +75,7 @@ const generateFn = createServerFn({ method: "GET" })
       });
 
       if (!res) {
-        throw new Error("categoria nao encontrada");
+        throw notFound();
       }
 
       categoryId = res.id;
@@ -106,7 +111,7 @@ const generateFn = createServerFn({ method: "GET" })
     ]);
 
     if (!sign) {
-      throw new Error(`Sign ${signo} not found`);
+      throw notFound();
     }
 
     const hasCategory = categoria && !!categoryId;
