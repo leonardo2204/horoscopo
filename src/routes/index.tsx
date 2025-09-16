@@ -87,7 +87,7 @@ function Home() {
       {/* Hero Section */}
       <section className="relative px-4 py-8 md:py-16 lg:py-20">
         {/* Background constellation/zodiac decoration */}
-        <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0 opacity-30">
           <svg
             className="w-full h-full"
             viewBox="0 0 400 400"
@@ -201,7 +201,7 @@ function Home() {
             {signos.map((signo) => (
               <Link
                 key={signo.id}
-                to="/horoscopo-do-dia{-$categoria}/$signo"
+                to="/horoscopo-do-dia/$signo"
                 params={{ signo: signo.normalizedName }}
                 onClick={() => {
                   track(ANALYTICS_EVENTS.SIGN_CARD_CLICKED, {

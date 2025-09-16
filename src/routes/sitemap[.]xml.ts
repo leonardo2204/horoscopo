@@ -34,11 +34,11 @@ export const ServerRoute = createServerFileRoute("/sitemap.xml").methods({
       },
     });
 
-    // Generate junction URLs for each combination of category and sign
-    const junctionUrls = categories.flatMap((category) =>
-      signs.map(
-        (sign) => `  <url>
-    <loc>${baseUrl}/horoscopo-do-dia-${category.name}/${denormalizeSignName(sign.namePt)}</loc>
+    // Generate category URLs for each combination of sign and category
+    const categoryUrls = signs.flatMap((sign) =>
+      categories.map(
+        (category) => `  <url>
+    <loc>${baseUrl}/horoscopo-do-dia/${denormalizeSignName(sign.namePt)}/${category.name}</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>`
@@ -62,7 +62,7 @@ export const ServerRoute = createServerFileRoute("/sitemap.xml").methods({
   </url>`
     )
     .join("\n")}
-  ${junctionUrls.join("\n")}
+  ${categoryUrls.join("\n")}
 </urlset>`;
 
     // Return the XML with the appropriate content type

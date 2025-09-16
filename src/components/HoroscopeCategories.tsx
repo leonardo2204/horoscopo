@@ -207,8 +207,8 @@ function HoroscopeCategories({ sign }: { sign: string }) {
         <div className="flex flex-row gap-4 my-4">
           {categories?.map((c) => (
             <Link
-              to="/horoscopo-do-dia{-$categoria}/$signo"
-              params={{ signo: sign, categoria: `-${c.name}` }}
+              to="/horoscopo-do-dia/$signo/$categoria"
+              params={{ signo: sign, categoria: c.name }}
               key={c.id}
               onClick={() => {
                 track(ANALYTICS_EVENTS.CATEGORY_CLICKED, {
