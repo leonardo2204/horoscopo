@@ -9,7 +9,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml* ./
 
 # Install dependencies using pnpm (or npm/yarn)
-RUN npm install --legacy-peer-deps
+RUN npm install --force
 
 # Copy the rest of the application files
 COPY . .
