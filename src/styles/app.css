@@ -21,7 +21,13 @@
 
   html,
   body {
-    @apply text-gray-900 bg-gray-50 dark:bg-gray-950 dark:text-gray-200;
+    @apply bg-gray-50 dark:bg-gray-950;
+  }
+
+  /* Ensure h1 elements with purple class display purple on all devices */
+  h1.text-acento-mistico {
+    color: var(--acento-mistico) !important;
+    -webkit-text-fill-color: var(--acento-mistico) !important;
   }
 
   /* Horoscope Theme Classes */
@@ -30,7 +36,8 @@
   }
 
   .text-acento-mistico {
-    color: var(--acento-mistico);
+    color: var(--acento-mistico) !important;
+    -webkit-text-fill-color: var(--acento-mistico) !important;
   }
 
   .bg-acento-mistico {
@@ -49,6 +56,20 @@
     color: var(--texto-padrao);
   }
 
+  /* Specific class for black text that works on all devices */
+  .text-black-safe {
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+  }
+
+  /* Dark mode version for black text */
+  @media (prefers-color-scheme: dark) {
+    .text-black-safe {
+      color: #e5e7eb !important;
+      -webkit-text-fill-color: #e5e7eb !important;
+    }
+  }
+
   .bg-secao-1 {
     background-color: var(--bg-secao-1);
   }
@@ -62,6 +83,8 @@
   }
 }
 
-@utility no-scrollbar {
-  @apply [scrollbar-width:none] [&::-webkit-scrollbar]:hidden;
+@layer utilities {
+  .no-scrollbar {
+    @apply [scrollbar-width:none] [&::-webkit-scrollbar]:hidden;
+  }
 }

@@ -106,7 +106,7 @@ function HoroscopeVoting({
     return (
       <div className="flex items-center justify-center gap-4 py-4">
         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-acento-mistico"></div>
-        <span className="text-sm text-padrao/60">Preparando votação...</span>
+        <span className="text-sm text-padrao/60 text-black-safe">Preparando votação...</span>
       </div>
     );
   }
@@ -114,7 +114,7 @@ function HoroscopeVoting({
   if (authError) {
     return (
       <div className="flex flex-col items-center gap-3 py-4">
-        <div className="text-red-500 text-sm text-center">{authError}</div>
+        <div className="text-red-500 text-sm text-center text-black-safe">{authError}</div>
         <button
           onClick={() => window.location.reload()}
           className="text-xs text-acento-mistico hover:underline"
@@ -144,7 +144,7 @@ function HoroscopeVoting({
 
   return (
     <div className="flex flex-col items-center gap-3 py-4 border-t border-gray-200 mt-6">
-      <div className="text-sm text-padrao/70 text-center">
+      <div className="text-sm text-padrao/70 text-center text-black-safe">
         Este horóscopo foi útil para você?
       </div>
 
@@ -203,14 +203,14 @@ function HoroscopeVoting({
       </div>
 
       {isLoading && (
-        <div className="flex items-center gap-2 text-xs text-padrao/50">
+        <div className="flex items-center gap-2 text-xs text-padrao/50 text-black-safe">
           <div className="animate-spin rounded-full h-3 w-3 border-b border-acento-mistico"></div>
           Salvando...
         </div>
       )}
 
       {hasVoted && !isLoading && (
-        <div className="text-xs text-padrao/50">
+        <div className="text-xs text-padrao/50 text-black-safe">
           Obrigado pelo seu feedback!
         </div>
       )}

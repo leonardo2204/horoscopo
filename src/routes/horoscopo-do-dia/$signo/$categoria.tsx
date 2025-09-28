@@ -22,7 +22,7 @@ function LoadingSpinner() {
         <div className="text-acento-mistico mb-2 text-lg font-medium">
           Consultando os astros...
         </div>
-        <div className="text-padrao/60 text-sm">
+        <div className="text-padrao/60 text-sm text-black-safe">
           Aguarde enquanto preparamos seu horóscopo personalizado
         </div>
       </div>
@@ -110,7 +110,7 @@ function RouteComponent() {
     return (
       <div className="min-h-screen bg-principal flex items-center justify-center">
         <div className="text-center">
-          <div className="text-red-500 mb-4">Erro ao carregar o horóscopo</div>
+          <div className="text-red-500 mb-4 text-black-safe">Erro ao carregar o horóscopo</div>
           <button
             onClick={() => {
               track(ANALYTICS_EVENTS.ERROR_RETRY_CLICKED, {
