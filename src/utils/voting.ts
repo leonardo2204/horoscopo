@@ -85,124 +85,120 @@ export const getUserVoteFn = createServerFn({ method: "GET" })
 
 export const castVoteFn = createServerFn({ method: "POST" })
   .validator(castVoteSchema)
-  .handler(
-    async ({
-      data: { signId, effectiveDate, categoryId, rating },
-    }) => {
-      const session = await auth.api.getSession({
-        headers: getHeaders() as any,
+  .handler(async ({ data: { signId, effectiveDate, categoryId, rating } }) => {
+    const session = await auth.api.getSession({
+      headers: getHeaders() as any,
+    });
+
+    if (!session?.user?.id) {
+      throw new Error("User not authenticated");
+    }
+
+    // First, get the horoscope content ID
+    const horoscopeContentRecord =
+      await getDB().query.horoscopeContent.findFirst({
+        where: and(
+          eq(horoscopeContent.signId, signId),
+          eq(horoscopeContent.effectiveDate, effectiveDate),
+          eq(horoscopeContent.typeId, 1) // daily horoscope
+        ),
+        columns: { id: true },
       });
 
-      if (!session?.user?.id) {
-        throw new Error("User not authenticated");
-      }
+    if (!horoscopeContentRecord) {
+      throw new Error("Horoscope content not found");
+    }
 
-      // First, get the horoscope content ID
-      const horoscopeContentRecord =
-        await getDB().query.horoscopeContent.findFirst({
+    if (categoryId) {
+      // Handle category-specific vote
+      // First check if the category content exists
+      const categoryContent =
+        await getDB().query.horoscopeContentCategories.findFirst({
           where: and(
-            eq(horoscopeContent.signId, signId),
-            eq(horoscopeContent.effectiveDate, effectiveDate),
-            eq(horoscopeContent.typeId, 1) // daily horoscope
+            eq(
+              horoscopeContentCategories.horoscopeContentId,
+              horoscopeContentRecord.id
+            ),
+            eq(horoscopeContentCategories.categoryId, categoryId)
           ),
-          columns: { id: true },
         });
 
-      if (!horoscopeContentRecord) {
-        throw new Error("Horoscope content not found");
+      if (!categoryContent) {
+        throw new Error("Category content not found");
       }
 
-      if (categoryId) {
-        // Handle category-specific vote
-        // First check if the category content exists
-        const categoryContent =
-          await getDB().query.horoscopeContentCategories.findFirst({
-            where: and(
-              eq(
-                horoscopeContentCategories.horoscopeContentId,
-                horoscopeContentRecord.id
-              ),
-              eq(horoscopeContentCategories.categoryId, categoryId)
+      // Check if user has already voted
+      const existingVote =
+        await getDB().query.horoscopeCategoryRatings.findFirst({
+          where: and(
+            eq(
+              horoscopeCategoryRatings.horoscopeContentId,
+              horoscopeContentRecord.id
             ),
-          });
+            eq(horoscopeCategoryRatings.categoryId, categoryId),
+            eq(horoscopeCategoryRatings.userId, session.user.id)
+          ),
+        });
 
-        if (!categoryContent) {
-          throw new Error("Category content not found");
-        }
-
-        // Check if user has already voted
-        const existingVote =
-          await getDB().query.horoscopeCategoryRatings.findFirst({
-            where: and(
+      if (existingVote) {
+        // Update existing vote
+        await getDB()
+          .update(horoscopeCategoryRatings)
+          .set({ rating })
+          .where(
+            and(
               eq(
                 horoscopeCategoryRatings.horoscopeContentId,
                 horoscopeContentRecord.id
               ),
               eq(horoscopeCategoryRatings.categoryId, categoryId),
               eq(horoscopeCategoryRatings.userId, session.user.id)
-            ),
-          });
-
-        if (existingVote) {
-          // Update existing vote
-          await getDB()
-            .update(horoscopeCategoryRatings)
-            .set({ rating })
-            .where(
-              and(
-                eq(
-                  horoscopeCategoryRatings.horoscopeContentId,
-                  horoscopeContentRecord.id
-                ),
-                eq(horoscopeCategoryRatings.categoryId, categoryId),
-                eq(horoscopeCategoryRatings.userId, session.user.id)
-              )
-            );
-        } else {
-          // Insert new vote
-          await getDB().insert(horoscopeCategoryRatings).values({
-            horoscopeContentId: horoscopeContentRecord.id,
-            categoryId,
-            userId: session.user.id,
-            rating,
-          });
-        }
+            )
+          );
       } else {
-        // Handle general horoscope vote
-        const existingVote = await getDB().query.horoscopeRatings.findFirst({
-          where: and(
-            eq(horoscopeRatings.horoscopeContentId, horoscopeContentRecord.id),
-            eq(horoscopeRatings.userId, session.user.id)
-          ),
+        // Insert new vote
+        await getDB().insert(horoscopeCategoryRatings).values({
+          horoscopeContentId: horoscopeContentRecord.id,
+          categoryId,
+          userId: session.user.id,
+          rating,
         });
-
-        if (existingVote) {
-          // Update existing vote
-          await getDB()
-            .update(horoscopeRatings)
-            .set({ rating })
-            .where(
-              and(
-                eq(
-                  horoscopeRatings.horoscopeContentId,
-                  horoscopeContentRecord.id
-                ),
-                eq(horoscopeRatings.userId, session.user.id)
-              )
-            );
-        } else {
-          // Insert new vote
-          await getDB().insert(horoscopeRatings).values({
-            horoscopeContentId: horoscopeContentRecord.id,
-            userId: session.user.id,
-            rating,
-          });
-        }
       }
+    } else {
+      // Handle general horoscope vote
+      const existingVote = await getDB().query.horoscopeRatings.findFirst({
+        where: and(
+          eq(horoscopeRatings.horoscopeContentId, horoscopeContentRecord.id),
+          eq(horoscopeRatings.userId, session.user.id)
+        ),
+      });
 
-      return { success: true };
+      if (existingVote) {
+        // Update existing vote
+        await getDB()
+          .update(horoscopeRatings)
+          .set({ rating })
+          .where(
+            and(
+              eq(
+                horoscopeRatings.horoscopeContentId,
+                horoscopeContentRecord.id
+              ),
+              eq(horoscopeRatings.userId, session.user.id)
+            )
+          );
+      } else {
+        // Insert new vote
+        await getDB().insert(horoscopeRatings).values({
+          horoscopeContentId: horoscopeContentRecord.id,
+          userId: session.user.id,
+          rating,
+        });
+      }
     }
-  );
+
+    return { success: true };
+  });
 
 export const checkAuthAndSignInFn = createServerFn({ method: "POST" }).handler(
   async () => {

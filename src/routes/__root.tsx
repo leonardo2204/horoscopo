@@ -18,6 +18,7 @@ import { User } from "better-auth";
 import { auth } from "../lib/auth";
 import { createServerFn } from "@tanstack/react-start";
 import { getHeaders } from "@tanstack/react-start/server";
+import { wrapCreateRootRouteWithSentry } from "@sentry/tanstackstart-react";
 
 interface RouteContext {
   user?: User;
@@ -33,7 +34,9 @@ const getSessionFn = createServerFn({ method: "POST" }).handler(async () => {
   return session?.user;
 });
 
-export const Route = createRootRouteWithContext<RouteContext>()({
+export const Route = wrapCreateRootRouteWithSentry(
+  createRootRouteWithContext<RouteContext>
+)()({
   head: () => ({
     meta: [
       {
@@ -45,9 +48,9 @@ export const Route = createRootRouteWithContext<RouteContext>()({
       },
       ...seo({
         title:
-          "Meu Horóscopo | O melhor da Astrologia, horóscopo, mapa astral e muito mais!",
+          "Horóscopo do Dia Grátis - Signos, Mapa Astral e Previsão Amorosa para 2025 | MeuHoroscopo.com",
         description:
-          "Meu Horóscopo | Tudo sobre astrologia, horóscopo, simpatias, tarot e significados dos sonhos. Explore conteúdos exclusivos no Meu Horóscopo!",
+          "Descubra seu horóscopo diário completo, previsões anuais, compatibilidade entre signos e mapa astral grátis. Atualizações 2025. Confira agora!",
       }),
     ],
     links: [

@@ -4,7 +4,11 @@ import { getDB } from "../db";
 import { setResponseHeader } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { horoscopeContent } from "../db/schema/schema";
-import { usePageView, useAnalytics, ANALYTICS_EVENTS } from "../utils/analytics";
+import {
+  usePageView,
+  useAnalytics,
+  ANALYTICS_EVENTS,
+} from "../utils/analytics";
 
 function normalizeSignName(signName: string): string {
   return signName
@@ -76,10 +80,10 @@ export const Route = createFileRoute("/")({
 function Home() {
   const { signos } = Route.useLoaderData();
   const { track } = useAnalytics();
-  
+
   // Track home page view
-  usePageView('home', {
-    total_signs_displayed: signos?.length || 0
+  usePageView("home", {
+    total_signs_displayed: signos?.length || 0,
   });
 
   return (
@@ -132,16 +136,13 @@ function Home() {
         <div className="relative z-10 max-w-4xl mx-auto text-center">
           {/* Main Title */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-acento-mistico mb-4 md:mb-6">
-            Seu horóscopo diário,{" "}
-            <span className="text-toque-solar">personalizado para você</span>{" "}
-            <span className="inline-block">✨</span>
+            Horóscopo do dia completo para todos os signos
           </h1>
 
           {/* Subtitle */}
-          <p className="text-lg md:text-xl lg:text-2xl text-padrao/80 mb-8 md:mb-12 max-w-3xl mx-auto leading-relaxed">
-            Nada de textos genéricos. Aqui você aprende sobre astrologia,
-            horóscopo, mapa astral e muito mais!
-          </p>
+          <h2 className="text-lg md:text-xl lg:text-2xl text-padrao/80 mb-8 md:mb-12 max-w-3xl mx-auto leading-relaxed">
+            Confira o Horóscopo diário dos 12 signos do Zodíaco
+          </h2>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto sm:max-w-none">
@@ -172,8 +173,8 @@ function Home() {
             <button
               onClick={() => {
                 track(ANALYTICS_EVENTS.CTA_BUTTON_CLICKED, {
-                  button_text: 'Ver horóscopo de hoje',
-                  location: 'hero_section'
+                  button_text: "Ver horóscopo de hoje",
+                  location: "hero_section",
                 });
                 document
                   .getElementById("horoscope-section")
@@ -194,7 +195,7 @@ function Home() {
       >
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-acento-mistico text-center mb-8 md:mb-12">
-            Horóscopo de Hoje
+            O que dizem os Astros hoje
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
@@ -207,7 +208,7 @@ function Home() {
                   track(ANALYTICS_EVENTS.SIGN_CARD_CLICKED, {
                     sign: signo.namePt,
                     sign_id: signo.id,
-                    location: 'home_page'
+                    location: "home_page",
                   });
                 }}
                 className="bg-white rounded-xl p-4 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group hover:scale-105 block"

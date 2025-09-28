@@ -46,7 +46,7 @@ export const Route = createFileRoute("/horoscopo-do-dia/$signo/$categoria")({
         meta: [
           ...seo({
             title: `Horóscopo de ${categoria} para o signo de ${signo}`,
-            description: `Veja as previsões de ${signo} para ${categoria} hoje: amor, dinheiro, trabalho e bem-estar. Dicas práticas + números e cor da sorte. Leia agora!`,
+            description: `Horóscopo de ${signo} hoje: ${categoria} - Marque seu dia. Veja as previsões astrais atualizadas para ${signo} em 2025.`,
             url: canonicalUrl.toString(),
           }),
         ],
@@ -63,7 +63,7 @@ export const Route = createFileRoute("/horoscopo-do-dia/$signo/$categoria")({
       meta: [
         ...seo({
           title: `Horóscopo sobre ${loaderData.category}, ${formatDateToPortuguese(loaderData.today)}, para o signo de ${loaderData.sign}`,
-          description: `Veja as previsões de ${signo} e ${loaderData.category} para hoje, ${formatDateToPortuguese(loaderData.today)}: amor, dinheiro, trabalho e bem-estar. Dicas práticas + números e cor da sorte. Leia agora!`,
+          description: `Horóscopo de ${signo} hoje: ${categoria} - Marque seu dia. Veja as previsões astrais atualizadas para ${signo} em 2025.`,
           url: canonicalUrl.toString(),
         }),
       ],
@@ -79,7 +79,7 @@ export const Route = createFileRoute("/horoscopo-do-dia/$signo/$categoria")({
 });
 
 function RouteComponent() {
-  const { signo, categoria } = useParams({
+  const { signo } = useParams({
     from: "/horoscopo-do-dia/$signo/$categoria",
   });
   const horoscopeData = Route.useLoaderData();

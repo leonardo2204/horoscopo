@@ -2,7 +2,12 @@ import { useState, useEffect } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { authClient } from "../lib/auth-client";
-import { getUserVoteFn, castVoteFn, checkAuthAndSignInFn } from "../utils/voting";
+import {
+  getUserVoteFn,
+  castVoteFn,
+  checkAuthAndSignInFn,
+} from "../utils/voting";
+import * as Sentry from "@sentry/tanstackstart-react";
 
 interface HoroscopeVotingProps {
   signId: number;
@@ -10,7 +15,11 @@ interface HoroscopeVotingProps {
   categoryId?: number;
 }
 
-function HoroscopeVoting({ signId, effectiveDate, categoryId }: HoroscopeVotingProps) {
+function HoroscopeVoting({
+  signId,
+  effectiveDate,
+  categoryId,
+}: HoroscopeVotingProps) {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const queryClient = useQueryClient();
@@ -36,7 +45,8 @@ function HoroscopeVoting({ signId, effectiveDate, categoryId }: HoroscopeVotingP
     refetch: refetchVote,
   } = useQuery({
     queryKey: ["user-vote", signId, effectiveDate, categoryId],
-    queryFn: () => getUserVoteServerFn({ data: { signId, effectiveDate, categoryId } }),
+    queryFn: () =>
+      getUserVoteServerFn({ data: { signId, effectiveDate, categoryId } }),
     enabled: authStatus?.isAuthenticated === true,
     staleTime: 1000 * 60 * 2, // 2 minutes
   });
@@ -54,6 +64,7 @@ function HoroscopeVoting({ signId, effectiveDate, categoryId }: HoroscopeVotingP
     },
     onError: (error) => {
       console.error("Failed to cast vote:", error);
+      Sentry.captureException(error);
       setAuthError("Erro ao registrar voto. Tente novamente.");
     },
   });
@@ -75,6 +86,7 @@ function HoroscopeVoting({ signId, effectiveDate, categoryId }: HoroscopeVotingP
       await refetchAuth();
     } catch (error) {
       console.error("Failed to sign in anonymously:", error);
+      Sentry.captureException(error);
       setAuthError("Erro ao autenticar. Recarregue a página.");
     } finally {
       setIsAuthenticating(false);

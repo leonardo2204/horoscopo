@@ -1,14 +1,7 @@
-import {
-  createFileRoute,
-  useParams,
-} from "@tanstack/react-router";
+import { createFileRoute, useParams } from "@tanstack/react-router";
 import { formatDateToPortuguese, seo } from "~/utils/seo";
 import { getDailyHoroscopeFn } from "~/utils/dailyHoroscope";
-import {
-  usePageView,
-  useAnalytics,
-  ANALYTICS_EVENTS,
-} from "~/utils/analytics";
+import { usePageView, useAnalytics, ANALYTICS_EVENTS } from "~/utils/analytics";
 import HoroscopeBreadcrumb from "~/components/HoroscopeBreadcrumb";
 import HoroscopeHero from "~/components/HoroscopeHero";
 import HoroscopeContent from "~/components/HoroscopeContent";
@@ -40,8 +33,7 @@ function LoadingSpinner() {
 export const Route = createFileRoute("/horoscopo-do-dia/$signo/")({
   component: RouteComponent,
   pendingComponent: LoadingSpinner,
-  loader: ({ params: { signo } }) =>
-    getDailyHoroscopeFn({ data: { signo } }),
+  loader: ({ params: { signo } }) => getDailyHoroscopeFn({ data: { signo } }),
   head: ({ loaderData, params: { signo } }) => {
     const canonicalUrl = new URL(
       `/horoscopo-do-dia/${signo}`,
@@ -53,7 +45,7 @@ export const Route = createFileRoute("/horoscopo-do-dia/$signo/")({
         meta: [
           ...seo({
             title: `Horóscopo de hoje para o signo de ${signo}`,
-            description: `Veja as previsões de ${signo} para hoje: amor, dinheiro, trabalho e bem-estar. Dicas práticas + números e cor da sorte. Leia agora!`,
+            description: `Horóscopo de ${signo} hoje: Amor, dinheiro e carreira - Marque seu dia. Veja as previsões astrais atualizadas para ${signo} em 2025.`,
             url: canonicalUrl.toString(),
           }),
         ],
@@ -70,7 +62,7 @@ export const Route = createFileRoute("/horoscopo-do-dia/$signo/")({
       meta: [
         ...seo({
           title: `Horóscopo de hoje, ${formatDateToPortuguese(loaderData.today)}, para o signo de ${loaderData.sign}`,
-          description: `Veja as previsões de ${signo} para hoje, ${formatDateToPortuguese(loaderData.today)}: amor, dinheiro, trabalho e bem-estar. Dicas práticas + números e cor da sorte. Leia agora!`,
+          description: `Horóscopo de ${signo} hoje: Amor, dinheiro e carreira - Marque seu dia. Veja as previsões astrais atualizadas para ${signo} em 2025`,
           url: canonicalUrl.toString(),
         }),
       ],
@@ -137,10 +129,7 @@ function RouteComponent() {
   return (
     <main className="min-h-screen bg-principal">
       {/* Breadcrumb */}
-      <HoroscopeBreadcrumb
-        signName={horoscopeData.sign}
-        signo={signo}
-      />
+      <HoroscopeBreadcrumb signName={horoscopeData.sign} signo={signo} />
 
       {/* Hero section */}
       <HoroscopeHero

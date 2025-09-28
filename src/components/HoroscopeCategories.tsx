@@ -5,6 +5,7 @@ import { getDB } from "../db";
 import { useQuery } from "@tanstack/react-query";
 import { useAnalytics, ANALYTICS_EVENTS } from "../utils/analytics";
 import { setResponseHeader } from "@tanstack/react-start/server";
+import * as Sentry from "@sentry/tanstackstart-react";
 
 const getCategoriesFn = createServerFn().handler(async () => {
   setResponseHeader("cache-control", "public, max-age=43200, s-maxage=3600");
@@ -150,6 +151,7 @@ function HoroscopeCategories({ sign }: { sign: string }) {
   }
 
   if (error) {
+    Sentry.captureException(error);
     return <ErrorState onRetry={() => refetch()} sign={sign} />;
   }
 
