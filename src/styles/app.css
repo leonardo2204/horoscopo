@@ -59,7 +59,7 @@
     --bg-principal: #FFF8F0; /* Fundo principal - creme suave */
     --acento-mistico: #6C4AB6; /* Acentos místicos - roxo profundo */
     --toque-solar: #F9A826; /* Toques solares - amarelo dourado */
-    --texto-padrao: #333333; /* Texto padrão */
+    --texto-padrao: #2d2d2d; /* Texto padrão */
     --bg-secao-1: #F4EDE8; /* Fundo de seções - alternância 1 */
     --bg-secao-2: #FCEFEF; /* Fundo de seções - alternância 2 */
     --background: 0 0% 100%;
@@ -87,6 +87,33 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 
   html {
@@ -158,6 +185,15 @@
 
   .using-mouse * {
     outline: none !important;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }
 

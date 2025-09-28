@@ -9,7 +9,7 @@ interface HoroscopeBreadcrumbProps {
 function HoroscopeBreadcrumb({ signName, signo, categoryName }: HoroscopeBreadcrumbProps) {
   return (
     <div className="max-w-4xl mx-auto px-4 py-4">
-      <nav className="text-sm text-padrao/60 text-black-safe">
+      <nav className="text-sm text-black">
         <Link to="/" className="hover:text-acento-mistico transition-colors">
           Início
         </Link>

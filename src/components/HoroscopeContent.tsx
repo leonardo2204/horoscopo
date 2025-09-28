@@ -10,7 +10,7 @@ interface HoroscopeContentProps {
 function HoroscopeContent({ text, signId, effectiveDate, categoryId }: HoroscopeContentProps) {
   return (
     <div className="bg-white rounded-2xl p-6 md:p-8 shadow-lg">
-      <div className="prose prose-lg max-w-none text-black-safe">
+      <div className="prose prose-lg max-w-none text-black">
         {text}
       </div>
       <HoroscopeVoting

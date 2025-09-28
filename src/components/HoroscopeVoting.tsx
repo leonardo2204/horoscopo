@@ -106,7 +106,7 @@ function HoroscopeVoting({
     return (
       <div className="flex items-center justify-center gap-4 py-4">
         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-acento-mistico"></div>
-        <span className="text-sm text-padrao/60 text-black-safe">Preparando votação...</span>
+        <span className="text-sm text-padrao/60 text-black">Preparando votação...</span>
       </div>
     );
   }
